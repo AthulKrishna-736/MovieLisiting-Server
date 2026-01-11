@@ -33,13 +33,13 @@ PORT=5000
 CLIENT_URL=http://localhost:5173
 OMDB_API_KEY=your_omdb_api_key_here
 OMDB_URL=https://www.omdbapi.com
-
+```
 ---
 
 ## Project Setup
 
-```npm init -y
+```npm init -y```
 
-```npm install
+```npm install```
 
-```npm run start
+```npm run start```
