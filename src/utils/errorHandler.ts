@@ -4,7 +4,7 @@ import { HTTP_STATUS_CODES } from "../constants/statusCodes";
 export interface IAppError extends Error {
     message: string;
     statusCode?: number;
-    error?: any
+    error?: Error
 }
 
 export const errorHandler = (err: IAppError, _req: Request, res: Response, _next: NextFunction) => {
