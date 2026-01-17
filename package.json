@@ -4,7 +4,7 @@
   "description": "A Simple movile listing app with favourite movies feature using OMDB api.",
   "license": "ISC",
   "author": "",
-  "type": "module",
+  "type": "commonjs",
   "main": "dist/server.js",
   "scripts": {
     "build": "tsc",
