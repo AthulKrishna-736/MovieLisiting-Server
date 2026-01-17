@@ -1,0 +1,30 @@
+[
+  {
+    "Title": "Crazy, Stupid, Love.",
+    "Year": "2011",
+    "imdbID": "tt1570728",
+    "Type": "movie",
+    "Poster": "https://m.media-amazon.com/images/M/MV5BMTg2MjkwMTM0NF5BMl5BanBnXkFtZTcwMzc4NDg2NQ@@._V1_SX300.jpg"
+  },
+  {
+    "Title": "Dr. Strangelove or: How I Learned to Stop Worrying and Love the Bomb",
+    "Year": "1964",
+    "imdbID": "tt0057012",
+    "Type": "movie",
+    "Poster": "https://m.media-amazon.com/images/M/MV5BMjFjYzBlOTktMTI2OS00ZWVhLTgxMDUtNzAwODY2NmI3YTAzXkEyXkFqcGc@._V1_SX300.jpg"
+  },
+  {
+    "Title": "Thor: Love and Thunder",
+    "Year": "2022",
+    "imdbID": "tt10648342",
+    "Type": "movie",
+    "Poster": "https://m.media-amazon.com/images/M/MV5BZjRiMDhiZjQtNjk5Yi00ZDcwLTkyYTEtMDc1NjdmNjFhNGIzXkEyXkFqcGc@._V1_SX300.jpg"
+  },
+  {
+    "Title": "Doctor Strange",
+    "Year": "2016",
+    "imdbID": "tt1211837",
+    "Type": "movie",
+    "Poster": "https://m.media-amazon.com/images/M/MV5BNjgwNzAzNjk1Nl5BMl5BanBnXkFtZTgwMzQ2NjI1OTE@._V1_SX300.jpg"
+  }
+]
