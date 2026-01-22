@@ -1,32 +1,30 @@
 import { Request, Response, NextFunction } from "express";
 import { HTTP_STATUS_CODES } from "../constants/statusCodes";
-import { IMovieController } from "./interfaces/movieController.interface";
+import { IMovieController } from "../interfaces/controllers/movieController.interface";
 import { inject, injectable } from "inversify";
 import { TOKENS } from "../constants/tokens";
-import { IMovieService } from "../services/interfaces/movieService.interface";
 import { responseHandler } from "../utils/ResponseHandler";
+import { IMovieService } from "../interfaces/services/movieService.interface";
+import { IFavoriteService } from "../interfaces/services/favoriteService.interface";
 
 
 @injectable()
 export class MovieController implements IMovieController {
     constructor(
         @inject(TOKENS.MovieService) private _movieService: IMovieService,
+        @inject(TOKENS.FavortiesService) private _favoritesService: IFavoriteService,
     ) { }
 
     searchMovies = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         try {
-            const { query, page = "1", limit = "10" } = req.query;
+            const { query, page = 1 } = req.query;
 
             if (!query) {
                 res.status(HTTP_STATUS_CODES.badRequest).json({ message: "Search query is required" });
                 return;
             }
 
-            const { message, data, total } = await this._movieService.searchMovies(
-                String(query),
-                Number(page),
-                Number(limit)
-            );
+            const { message, data, total } = await this._movieService.searchMovies(query as string, page as number);
 
             responseHandler(res, message, data, HTTP_STATUS_CODES.success, total);
         } catch (error) {
@@ -36,7 +34,7 @@ export class MovieController implements IMovieController {
 
     getFavorites = async (_req: Request, res: Response, next: NextFunction): Promise<void> => {
         try {
-            const { movies, message } = this._movieService.getFavorites();
+            const { movies, message } = this._favoritesService.getAllUserFavorites();
             responseHandler(res, message, movies, HTTP_STATUS_CODES.success, null);
         } catch (error) {
             next({ message: 'Failed to fetch favorites', statusCode: HTTP_STATUS_CODES.serverError, error });
@@ -51,8 +49,8 @@ export class MovieController implements IMovieController {
                 throw new Error('Invalid movie data');
             }
 
-            const { movies, message } = this._movieService.toggleFavorite(movie);
-            responseHandler(res, message, movies, HTTP_STATUS_CODES.success, null)
+            const { message } = this._favoritesService.favoriteMovieToggle(movie.imdbID, movie);
+            responseHandler(res, message, null, HTTP_STATUS_CODES.success, null)
         } catch (error) {
             next({ message: "Failed to update favorites", statusCode: HTTP_STATUS_CODES.serverError, error });
         }

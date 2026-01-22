@@ -1,39 +1,41 @@
-import fs from "fs";
-import path from "path";
-import { IRepository } from "./interfaces/repository.interface";
-import { IMovie } from "../models/movie.model";
+import { IBaseRepository, IDatabase, IFavoriteRepository } from "../interfaces/repositories/repository.interface";
+import { IMovie } from "../interfaces/models/movie.model";
 import { injectable } from "inversify";
+import { BaseRepository } from "./base.repository";
+import { Database } from "../database/database";
 
 @injectable()
-export class FavoritesRepository implements IRepository<IMovie> {
-    private readonly filePath = path.join(process.cwd(), "src", "database", "favorites.json");
+export class FavoritesRepository implements IFavoriteRepository {
+    private _movieDb: IDatabase<string, IMovie>;
+    private _baseRepository: IBaseRepository<string, IMovie>;
 
     constructor() {
-        if (!fs.existsSync(this.filePath)) {
-            fs.writeFileSync(this.filePath, "[]");
-        }
+        this._movieDb = new Database<string, IMovie>();
+        this._baseRepository = new BaseRepository<string, IMovie>(this._movieDb);
     }
 
-    read(): IMovie[] {
-        const data = fs.readFileSync(this.filePath, "utf-8");
-        return data ? JSON.parse(data) : [];
+    createFavorites(key: string, data: IMovie): IMovie {
+        const create = this._baseRepository.create(key, data);
+        return create;
     }
 
-    write(data: IMovie[]): void {
-        fs.writeFileSync(this.filePath, JSON.stringify(data, null, 2));
+    updateFavorties(key: string, data: IMovie): IMovie {
+        const update = this._baseRepository.update(key, data);
+        return update;
     }
 
-    toggle(movie: IMovie): IMovie[] {
-        let favorites = this.read();
-        const exists = favorites.find(m => m.imdbID === movie.imdbID);
-
-        if (exists) {
-            favorites = favorites.filter(m => m.imdbID !== movie.imdbID);
-        } else {
-            favorites.push(movie);
-        }
-
-        this.write(favorites);
+    readAllFavorites(): IMovie[] {
+        const favorites = this._baseRepository.read();
         return favorites;
+    }
+
+    deleteFavorites(key: string): boolean {
+        const deleted = this._baseRepository.delete(key);
+        return deleted;
+    }
+
+    findMovieById(key: string): IMovie | null {
+        const movie = this._baseRepository.findMovieById(key);
+        return movie;
     }
 }
