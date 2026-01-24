@@ -1,41 +1,37 @@
-import { IBaseRepository, IDatabase, IFavoriteRepository } from "../interfaces/repositories/repository.interface";
+import { IDatabase, IFavoriteRepository } from "../interfaces/repositories/repository.interface";
 import { IMovie } from "../interfaces/models/movie.model";
 import { injectable } from "inversify";
-import { BaseRepository } from "./base.repository";
-import { Database } from "../database/database";
+import { FavoritesDatabase } from "../database/database";
 
 @injectable()
 export class FavoritesRepository implements IFavoriteRepository {
-    private _movieDb: IDatabase<string, IMovie>;
-    private _baseRepository: IBaseRepository<string, IMovie>;
+    private _movieDb: IDatabase<string, string, IMovie>;
 
     constructor() {
-        this._movieDb = new Database<string, IMovie>();
-        this._baseRepository = new BaseRepository<string, IMovie>(this._movieDb);
+        this._movieDb = new FavoritesDatabase<string, string, IMovie>();
     }
 
-    createFavorites(key: string, data: IMovie): IMovie {
-        const create = this._baseRepository.create(key, data);
-        return create;
+    addFavorite(userId: string, movie: IMovie): void {
+        this._movieDb.add(userId, movie.imdbID, movie);
     }
 
-    updateFavorties(key: string, data: IMovie): IMovie {
-        const update = this._baseRepository.update(key, data);
-        return update;
+    removeFavorite(userId: string, movieId: string): boolean {
+        return this._movieDb.remove(userId, movieId);
     }
 
-    readAllFavorites(): IMovie[] {
-        const favorites = this._baseRepository.read();
-        return favorites;
+    getFavorites(userId: string): IMovie[] {
+        return this._movieDb.getAll(userId);
     }
 
-    deleteFavorites(key: string): boolean {
-        const deleted = this._baseRepository.delete(key);
-        return deleted;
+    getFavoriteById(userId: string, movieId: string): IMovie | null {
+        return this._movieDb.get(userId, movieId);
     }
 
-    findMovieById(key: string): IMovie | null {
-        const movie = this._baseRepository.findMovieById(key);
-        return movie;
+    isFavorite(userId: string, movieId: string): boolean {
+        return this._movieDb.has(userId, movieId);
+    }
+
+    clearFavorites(userId: string): boolean {
+        return this._movieDb.clearUser(userId);
     }
 }

@@ -16,17 +16,29 @@ app.use(
     })
 );
 
+// session managing
 app.use(session({
     secret: CONFIGS.SESSION_SECRET!,
+    name: 'movie_listing',
     resave: false,
     saveUninitialized: false,
     cookie: {
         httpOnly: true,
-        secure: false,          
+        secure: false,
         sameSite: "lax",
         maxAge: 1000 * 60 * 60 * 24,
     }
-}))
+}));
+
+app.use((req, _res, next) => {
+    if (!req.session.user) {
+        req.session.user = {
+            role: "guest",
+            id: req.sessionID,
+        };
+    }
+    next();
+});
 
 app.use(express.json());
 

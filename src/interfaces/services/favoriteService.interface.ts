@@ -1,6 +1,6 @@
 import { IMovie } from "../models/movie.model";
 
 export interface IFavoriteService {
-    getAllUserFavorites(): { movies: IMovie[] | null, message: string };
-    favoriteMovieToggle(id: string, data: IMovie): { message: string };
+    getAllUserFavorites(userId: string): { movies: IMovie[] | null, message: string };
+    favoriteMovieToggle(userId: string, data: IMovie): { message: string };
 }

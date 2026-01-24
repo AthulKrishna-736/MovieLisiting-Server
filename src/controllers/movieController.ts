@@ -8,87 +8,61 @@ import { IMovieService } from "../interfaces/services/movieService.interface";
 import { IFavoriteService } from "../interfaces/services/favoriteService.interface";
 
 
-// @injectable()
-// export class MovieController implements IMovieController {
-//     constructor(
-//         @inject(TOKENS.MovieService) private _movieService: IMovieService,
-//         @inject(TOKENS.FavortiesService) private _favoritesService: IFavoriteService,
-//     ) { }
-
-//     searchMovies = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-//         try {
-//             const { query, page = 1 } = req.query;
-
-//             if (!query) {
-//                 res.status(HTTP_STATUS_CODES.badRequest).json({ message: "Search query is required" });
-//                 return;
-//             }
-
-//             const { message, data, total } = await this._movieService.searchMovies(query as string, page as number);
-
-//             responseHandler(res, message, data, HTTP_STATUS_CODES.success, total);
-//         } catch (error) {
-//             next({ message: "Failed to fetch movies", statusCode: HTTP_STATUS_CODES.serverError, error });
-//         }
-//     };
-
-//     getFavorites = async (_req: Request, res: Response, next: NextFunction): Promise<void> => {
-//         try {
-//             const { movies, message } = this._favoritesService.getAllUserFavorites();
-//             responseHandler(res, message, movies, HTTP_STATUS_CODES.success, null);
-//         } catch (error) {
-//             next({ message: 'Failed to fetch favorites', statusCode: HTTP_STATUS_CODES.serverError, error });
-//         }
-//     };
-
-//     toggleFavorite = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-//         try {
-//             const movie = req.body;
-
-//             if (!movie?.imdbID) {
-//                 throw new Error('Invalid movie data');
-//             }
-
-//             const { message } = this._favoritesService.favoriteMovieToggle(movie.imdbID, movie);
-//             responseHandler(res, message, null, HTTP_STATUS_CODES.success, null)
-//         } catch (error) {
-//             next({ message: "Failed to update favorites", statusCode: HTTP_STATUS_CODES.serverError, error });
-//         }
-//     };
-// }
-
-
 @injectable()
 export class MovieController implements IMovieController {
-
     constructor(
         @inject(TOKENS.MovieService) private _movieService: IMovieService,
-        @inject(TOKENS.FavortiesService) private _favoritesService: IFavoriteService
+        @inject(TOKENS.FavortiesService) private _favoritesService: IFavoriteService,
     ) { }
 
-    getFavorites = (req: Request, res: Response, next: NextFunction) => {
-        if (!req.session.favorites) {
-            req.session.favorites = [];
+    searchMovies = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+        try {
+            const { query, page = 1 } = req.query;
+
+            if (!query) {
+                res.status(HTTP_STATUS_CODES.badRequest).json({ message: "Search query is required" });
+                return;
+            }
+
+            const { message, data, total } = await this._movieService.searchMovies(query as string, page as number);
+
+            responseHandler(res, message, data, HTTP_STATUS_CODES.success, total);
+        } catch (error) {
+            next({ message: "Failed to fetch movies", statusCode: HTTP_STATUS_CODES.serverError, error });
         }
-
-        const result = this._favoritesService.getAllUserFavorites(req.session.favorites);
-
-        res.json(result);
     };
 
-    toggleFavorite = (req: Request, res: Response, next: NextFunction) => {
-        if (!req.session.favorites) {
-            req.session.favorites = [];
+    getFavorites = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+        try {
+            const userId = req.session.user?.id;
+            if (!userId) {
+                return next({ message: 'Session expired. Please refresh the page.', statusCode: HTTP_STATUS_CODES.unauthorized });
+            }
+
+            const { movies, message } = this._favoritesService.getAllUserFavorites(userId);
+            responseHandler(res, message, movies, HTTP_STATUS_CODES.success, null);
+        } catch (error) {
+            next({ message: 'Failed to fetch favorites', statusCode: HTTP_STATUS_CODES.serverError, error });
         }
+    };
 
-        const { favorites, message } =
-            this._favoritesService.favoriteMovieToggle(
-                req.session.favorites,
-                req.body
-            );
+    toggleFavorite = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+        try {
+            const movie = req.body;
+            const userId = req.session.user?.id;
 
-        req.session.favorites = favorites;
+            if (!movie?.imdbID) {
+                throw new Error('Invalid movie data');
+            }
 
-        res.json({ message, movies: favorites });
+            if (!userId) {
+                return next({ message: 'Session expired. Please refresh the page.', statusCode: HTTP_STATUS_CODES.unauthorized });
+            }
+
+            const { message } = this._favoritesService.favoriteMovieToggle(userId, movie);
+            responseHandler(res, message, null, HTTP_STATUS_CODES.success, null)
+        } catch (error) {
+            next({ message: "Failed to update favorites", statusCode: HTTP_STATUS_CODES.serverError, error });
+        }
     };
 }

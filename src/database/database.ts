@@ -2,29 +2,43 @@ import { injectable } from "inversify";
 import { IDatabase } from "../interfaces/repositories/repository.interface";
 
 @injectable()
-export class Database<K extends string, D> implements IDatabase<K, D> {
-    private _store;
+export class FavoritesDatabase<U extends string, M extends string, D> implements IDatabase<U, M, D> {
+    private store: Map<U, Map<M, D>>;
+
     constructor() {
-        this._store = new Map<K, D>();
+        this.store = new Map();
     }
 
-    set(key: K, data: D): D {
-        this._store.set(key, data);
-        return data;
+    private getUserMap(userId: U): Map<M, D> {
+        let userMap = this.store.get(userId);
+        if (!userMap) {
+            userMap = new Map<M, D>();
+            this.store.set(userId, userMap);
+        }
+        return userMap;
     }
 
-    get(key: K): D | null {
-        const data = this._store.get(key);
-        return data ? data : null;
+    add(userId: U, movieId: M, data: D): void {
+        this.getUserMap(userId).set(movieId, data);
     }
 
-    getAll(): D[] {
-        const data = Array.from(this._store.values());
-        return data;
+    remove(userId: U, movieId: M): boolean {
+        return this.getUserMap(userId).delete(movieId);
     }
 
-    delete(key: K): boolean {
-        const data = this._store.delete(key);
-        return data;
+    get(userId: U, movieId: M): D | null {
+        return this.getUserMap(userId).get(movieId) ?? null;
+    }
+
+    getAll(userId: U): D[] {
+        return Array.from(this.getUserMap(userId).values());
+    }
+
+    has(userId: U, movieId: M): boolean {
+        return this.getUserMap(userId).has(movieId);
+    }
+
+    clearUser(userId: U): boolean {
+        return this.store.delete(userId);
     }
 }

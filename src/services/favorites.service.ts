@@ -10,8 +10,8 @@ export class FavoritesService implements IFavoriteService {
         @inject(TOKENS.FavoritesRepository) private _favoriteRepository: IFavoriteRepository
     ) { }
 
-    getAllUserFavorites(): { movies: IMovie[] | null, message: string } {
-        const movies = this._favoriteRepository.readAllFavorites();
+    getAllUserFavorites(userId: string): { movies: IMovie[] | null, message: string } {
+        const movies = this._favoriteRepository.getFavorites(userId);
         if (!movies || movies.length === 0) {
             return {
                 movies: null,
@@ -25,16 +25,15 @@ export class FavoritesService implements IFavoriteService {
         };
     }
 
-    favoriteMovieToggle(id: string, data: IMovie): { message: string } {
-        const findMovie = this._favoriteRepository.findMovieById(id);
-
-        if (findMovie && findMovie.imdbID) {
-            this._favoriteRepository.deleteFavorites(findMovie.imdbID);
+    favoriteMovieToggle(userId: string, data: IMovie): { message: string } {
+        const exists = this._favoriteRepository.isFavorite(userId, data.imdbID);
+        if (exists) {
+            this._favoriteRepository.removeFavorite(userId, data.imdbID);
             return {
                 message: 'Movie removed from favorites'
             };
         } else {
-            this._favoriteRepository.updateFavorties(data.imdbID, data);
+            this._favoriteRepository.addFavorite(userId, data);
             return {
                 message: 'Movie marked as favorite'
             };
