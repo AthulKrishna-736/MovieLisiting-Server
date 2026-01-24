@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { container } from "../containers/containers";
 import { TOKENS } from "../constants/tokens";
-import { IMovieController } from "../controllers/interfaces/movieController.interface";
+import { IMovieController } from "../interfaces/controllers/movieController.interface";
 
 const router = Router();
 

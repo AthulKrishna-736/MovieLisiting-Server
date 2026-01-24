@@ -1,5 +1,6 @@
 import express from "express";
 import cors from "cors";
+import session from 'express-session';
 import { CONFIGS } from "./constants/config";
 import router from "./routes/movieRoutes";
 import { errorHandler } from "./utils/errorHandler";
@@ -10,9 +11,34 @@ const app = express();
 app.use(
     cors({
         origin: CONFIGS.CLIENT_URL,
-        methods: ["GET", "POST", "PATCH", "PUT", "DELETE"]
+        methods: ["GET", "POST", "PATCH", "PUT", "DELETE"],
+        credentials: true,
     })
 );
+
+// session managing
+app.use(session({
+    secret: CONFIGS.SESSION_SECRET!,
+    name: 'movie_listing',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        httpOnly: true,
+        secure: false,
+        sameSite: "lax",
+        maxAge: 1000 * 60 * 60 * 24,
+    }
+}));
+
+app.use((req, _res, next) => {
+    if (!req.session.user) {
+        req.session.user = {
+            role: "guest",
+            id: req.sessionID,
+        };
+    }
+    next();
+});
 
 app.use(express.json());
 

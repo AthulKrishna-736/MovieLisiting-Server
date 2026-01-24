@@ -1,39 +1,37 @@
-import fs from "fs";
-import path from "path";
-import { IRepository } from "./interfaces/repository.interface";
-import { IMovie } from "../models/movie.model";
+import { IDatabase, IFavoriteRepository } from "../interfaces/repositories/repository.interface";
+import { IMovie } from "../interfaces/models/movie.model";
 import { injectable } from "inversify";
+import { FavoritesDatabase } from "../database/database";
 
 @injectable()
-export class FavoritesRepository implements IRepository<IMovie> {
-    private readonly filePath = path.join(process.cwd(), "src", "database", "favorites.json");
+export class FavoritesRepository implements IFavoriteRepository {
+    private _movieDb: IDatabase<string, string, IMovie>;
 
     constructor() {
-        if (!fs.existsSync(this.filePath)) {
-            fs.writeFileSync(this.filePath, "[]");
-        }
+        this._movieDb = new FavoritesDatabase<string, string, IMovie>();
     }
 
-    read(): IMovie[] {
-        const data = fs.readFileSync(this.filePath, "utf-8");
-        return data ? JSON.parse(data) : [];
+    addFavorite(userId: string, movie: IMovie): void {
+        this._movieDb.add(userId, movie.imdbID, movie);
     }
 
-    write(data: IMovie[]): void {
-        fs.writeFileSync(this.filePath, JSON.stringify(data, null, 2));
+    removeFavorite(userId: string, movieId: string): boolean {
+        return this._movieDb.remove(userId, movieId);
     }
 
-    toggle(movie: IMovie): IMovie[] {
-        let favorites = this.read();
-        const exists = favorites.find(m => m.imdbID === movie.imdbID);
+    getFavorites(userId: string): IMovie[] {
+        return this._movieDb.getAll(userId);
+    }
 
-        if (exists) {
-            favorites = favorites.filter(m => m.imdbID !== movie.imdbID);
-        } else {
-            favorites.push(movie);
-        }
+    getFavoriteById(userId: string, movieId: string): IMovie | null {
+        return this._movieDb.get(userId, movieId);
+    }
 
-        this.write(favorites);
-        return favorites;
+    isFavorite(userId: string, movieId: string): boolean {
+        return this._movieDb.has(userId, movieId);
+    }
+
+    clearFavorites(userId: string): boolean {
+        return this._movieDb.clearUser(userId);
     }
 }
